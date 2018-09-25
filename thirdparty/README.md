@@ -4,6 +4,22 @@ Thirdparty requirements
 =======================
 
 
+Build machines
+--------------
+
+MLML computers:
+
+- Oka = Ubuntu 16.04.4
+- Roquefort = Ubuntu 16.04.5
+- Gouda = MacOSX 10.12.6
+- Cazu Marzu = MacOSX 10.13.4
+- Camembert = Ubuntu 16.04.4
+
+@mmcauliffe computers:
+
+- Tin-man = Windows 10 (Ubuntu 16.04)
+- Toto = Windows 10 (Ubuntu 16.04.4)
+
 Windows
 -------
 

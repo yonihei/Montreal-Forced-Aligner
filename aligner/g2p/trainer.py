@@ -2,8 +2,6 @@ import subprocess
 import os
 import random
 import re
-import tempfile
-from ..dictionary import Dictionary
 
 from ..helper import thirdparty_binary
 

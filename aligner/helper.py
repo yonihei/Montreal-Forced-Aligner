@@ -1,7 +1,10 @@
 import os
+import sys
 
 
 def thirdparty_binary(binary_name):
+    if sys.platform == 'win32' and not binary_name.endswith('.exe'):
+        return binary_name + '.exe'
     return binary_name
 
 

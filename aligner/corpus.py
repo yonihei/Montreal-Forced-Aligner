@@ -217,17 +217,22 @@ class Corpus(object):
 
     def __init__(self, directory, output_directory,
                  speaker_characters=0,
-                 num_jobs=3, debug=False,
-                 ignore_exceptions=False):
+                 num_jobs=3, debug=False):
+        self.write_output = bool(output_directory)
         self.debug = debug
-        log_dir = os.path.join(output_directory, 'logging')
-        os.makedirs(log_dir, exist_ok=True)
-        self.log_file = os.path.join(log_dir, 'corpus.log')
-        root_logger = logging.getLogger()
-        root_logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(self.log_file, 'w', 'utf-8')
-        handler.setFormatter = logging.Formatter('%(name)s %(message)s')
-        root_logger.addHandler(handler)
+        if self.write_output:
+            log_dir = os.path.join(output_directory, 'logging')
+            os.makedirs(log_dir, exist_ok=True)
+            self.log_file = os.path.join(log_dir, 'corpus.log')
+            root_logger = logging.getLogger()
+            root_logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(self.log_file, 'w', 'utf-8')
+            handler.setFormatter = logging.Formatter('%(name)s %(message)s')
+            root_logger.addHandler(handler)
+            root_logger.info('Setting up corpus information...')
+            self.output_directory = os.path.join(output_directory, 'corpus_data')
+            self.temp_directory = os.path.join(self.output_directory, 'temp')
+            os.makedirs(self.temp_directory, exist_ok=True)
         if not os.path.exists(directory):
             raise CorpusError('The directory \'{}\' does not exist.'.format(directory))
         if not os.path.isdir(directory):
@@ -236,11 +241,7 @@ class Corpus(object):
             num_jobs = 1
 
         print('Setting up corpus information...')
-        root_logger.info('Setting up corpus information...')
         self.directory = directory
-        self.output_directory = os.path.join(output_directory, 'corpus_data')
-        self.temp_directory = os.path.join(self.output_directory, 'temp')
-        os.makedirs(self.temp_directory, exist_ok=True)
         self.num_jobs = num_jobs
 
         # Set up mapping dictionaries
@@ -353,8 +354,10 @@ class Corpus(object):
                     if n_channels == 2:
                         A_name = file_name + "_A"
                         B_name = file_name + "_B"
-
-                        A_path, B_path = extract_temp_channels(wav_path, self.temp_directory)
+                        if self.write_output:
+                            A_path, B_path = extract_temp_channels(wav_path, self.temp_directory)
+                        else:
+                            A_path, B_path = '', ''
                     elif n_channels > 2:
                         raise (Exception('More than two channels'))
                     self.speaker_ordering[file_name] = []
@@ -425,7 +428,8 @@ class Corpus(object):
         if bad_speakers:
             msg = 'The following speakers had multiple speaking rates: {}. ' \
                   'Please make sure that each speaker has a consistent sampling rate.'.format(', '.join(bad_speakers))
-            root_logger.error(msg)
+            if self.write_output:
+                root_logger.error(msg)
             raise (SampleRateError(msg))
 
         if len(self.speak_utt_mapping) < self.num_jobs:
@@ -436,7 +440,8 @@ class Corpus(object):
                   'If you would like to use fewer parallel jobs, ' \
                   'please resample all wav files to the same sample rate.'.format(self.num_jobs)
             print('WARNING: ' + msg)
-            root_logger.warning(msg)
+            if self.write_output:
+                root_logger.warning(msg)
         self.find_best_groupings()
 
     @property
